@@ -531,7 +531,6 @@ void readInput()
 
 int main(int argc, char **argv)
 {
-	gfxInitDefault();
 	consoleInit(NULL);
 
 	setInitialize();
@@ -557,15 +556,14 @@ int main(int argc, char **argv)
 		hidScanInput();
 		kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 		readInput();
-		if (kDown & KEY_PLUS) break; // break in order to return to hbmenu
+		if (kDown & KEY_PLUS) { break; }// break in order to return to hbmenu
+		consoleUpdate(NULL);
 
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-		gfxWaitForVsync();
+
 	}
 
 	setExit();
-	gfxExit();
+	consoleExit(NULL);
 	return 0;
 }
 

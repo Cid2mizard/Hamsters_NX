@@ -1,3 +1,9 @@
+/build
+*.elf
+*.nacp
+*.nro
+*.nso
+*.pfso
 # Prerequisites
 *.d
 
