@@ -1,10 +1,8 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>	
+#include <stdio.h> //printf
+#include <stdlib.h> //srand
+#include <time.h> //time
 
 #include <switch.h>
-
-u32 kDown;
 
 bool mode_intro;
 bool error;
@@ -41,12 +39,11 @@ u64 LanguageCode;
 s32 Language;
 Result langue;
 
-//u8 langue = 2;
+PadState pad;
+u32 kDown;
 
 void clean()
 {
-	printf("\x1b[28;1H                                               ");
-	printf("\x1b[29;1H                                               ");
 	printf("\x1b[30;1H                                               ");
 	printf("\x1b[31;1H                                               ");
 	printf("\x1b[32;1H                                               ");
@@ -63,41 +60,43 @@ void clean()
 	printf("\x1b[43;1H                                               ");
 	printf("\x1b[44;1H                                               ");
 	printf("\x1b[45;1H                                               ");
+	printf("\x1b[46;1H                                               ");
 }
-
 
 void printGame()
 {
 	if (mode_intro)
 	{
-		printf("\x1b[2;30H\x1b[31m***** HAMSTERS NX *****\x1b[0m");
+		printf("\x1b[1;30H\x1b[31m***** HAMSTERS NX *****\x1b[0m");
 
 		if (langue == 2)
 		{
-			printf("\x1b[4;1HLe but du jeu est de gerer un elevage de hamsters");
-			printf("\x1b[5;1Hpendant 12 mois en faisant des benefices.");
-			printf("\x1b[6;1H* On ne peut vendre ou accoupler que des adultes.");
-			printf("\x1b[7;1H* Les petits deviennent adultes en 1 mois.");
-			printf("\x1b[8;1H* Chaque accouplement peut donner un maximum de 18 petits.");
+			printf("\x1b[3;1HLe but du jeu est de gerer un elevage de hamsters");
+			printf("\x1b[4;1Hpendant 12 mois en faisant des benefices.");
+			printf("\x1b[5;1H* On peut vendre ou accoupler que des adultes.");
+			printf("\x1b[6;1H* Les petits deviennent adultes en 1 mois.");
+			printf("\x1b[7;1H* Chaque accouplement peut donner un maximum de 18 petits.");
+			printf("\x1b[8;1H* Au dela de 20 hamsters par cage, les hamsters meurent etouffes.");
 			printf("\x1b[10;1H** Appuyez sur A pour continuer...");
 		}
 		else
 		{
-			printf("\x1b[4;1HThe purpose of the game is to manage breeding");
-			printf("\x1b[5;1Hhamsters 12 months by making profits.");
-			printf("\x1b[6;1H* You can sell or couple only the adults.");
-			printf("\x1b[7;1H* Youngs become adults after 1 month.");
-			printf("\x1b[8;1H* Each coupling can give a maximum of 18 youngs.");
+			printf("\x1b[3;1HThe purpose of the game is to manage breeding");
+			printf("\x1b[4;1Hhamsters 12 months by making profits.");
+			printf("\x1b[5;1H* You can sell or couple only the adults.");
+			printf("\x1b[6;1H* Youngs become adults after 1 month.");
+			printf("\x1b[7;1H* Each coupling can give a maximum of 18 youngs.");
+			printf("\x1b[8;1H* Beyond 20 hamsters per cage, hamsters die suffocated.");
 			printf("\x1b[10;1H** Press A to continue...");
 		}
 	}
-	else if ((mode_game > 0) && (mode_game < 8))
+	else if ((mode_game > 0) && (mode_game <= 8))
 	{
 		if (langue == 2)
 		{
-			printf("\x1b[12;1H-------------------------------------------------");
-			printf("\x1b[13;15HSITUATION DU MOIS No %d   ", Mois);
-			printf("\x1b[15;10HMALES                 FEMELLES");
+			printf("\x1b[11;1H-------------------------------------------------");
+			printf("\x1b[12;15HSITUATION DU MOIS No %d   ", Mois);
+			printf("\x1b[14;10HMALES                 FEMELLES");
 			printf("\x1b[16;10HADULTES : %d   ", MALES.ADULTES);
 			printf("\x1b[16;32HADULTES : %d   ", FEMELLES.ADULTES);
 			printf("\x1b[17;10HPETITS  : %d   ", MALES.PETITS);
@@ -106,44 +105,44 @@ void printGame()
 			printf("\x1b[18;32HCAGES   : %d   ", FEMELLES.CAGES);
 			printf("\x1b[19;6Hnb par cage : %d   ", MALES.nb_par_cage);
 			printf("\x1b[19;28Hnb par cage : %d   ", FEMELLES.nb_par_cage);
-			printf("\x1b[21;1HNOURRITURE RESTANTE     : %d KG   ", NOURRITURE);
+			printf("\x1b[21;1HNOURRITURE RESTANTE  %d KG   ", NOURRITURE);
 			printf("\x1b[22;1HPRIX DU HAMSTER CE MOIS : %.2f $   ", PRIX_HAMSTER);
-			printf("\x1b[23;1HEN CAISSE               : %.2f $   ", CAISSE);	
-			printf("\x1b[24;1HMORTS DE FAIM           : %d   ", MORTS_FAIM);
-			printf("\x1b[25;1HMORTS ETOUFFES          : %d   ", MORTS_ETOUFFES);	
-			printf("\x1b[26;1H** Appuyez sur A pour continuer...");
-			printf("\x1b[27;1H-------------------------------------------------");
+			printf("\x1b[23;1HEN CAISSE : %.2f $   ", CAISSE);
+			printf("\x1b[25;1HMORTS DE FAIM  : %d   ", MORTS_FAIM);
+			printf("\x1b[26;1HMORTS ETOUFFES : %d   ", MORTS_ETOUFFES);
+			printf("\x1b[28;1H** Appuyez sur A pour continuer...");
+			printf("\x1b[29;1H-------------------------------------------------");
 
 			if (mode_game == 2)
 			{
-				printf("\x1b[28;1HMALES A VENDRE ? %d   ", males_a_vendre);
+				printf("\x1b[30;1HMALES A VENDRE ? (%.2f$) x %d   ", PRIX_HAMSTER, males_a_vendre);
 			}
 			if (mode_game == 3)
 			{
-				printf("\x1b[29;1HFEMELLES A VENDRE ? %d   ", femelles_a_vendre);
+				printf("\x1b[31;1HFEMELLES A VENDRE ? (%.2f$) x %d   ", PRIX_HAMSTER, femelles_a_vendre);
 			}
 			if (mode_game == 4)
 			{
-				printf("\x1b[30;1HNOMBRE D'ACCOUPLEMENT ? %d   ", nombre_accouplement);
+				printf("\x1b[32;1HNOMBRE D'ACCOUPLEMENT ? %d   ", nombre_accouplement);
 			}
 			if (mode_game == 5)
 			{
-				printf("\x1b[31;1HNOURRITURE A ACHETER ? %d   ", nourriture_a_acheter);
+				printf("\x1b[33;1HNOURRITURE A ACHETER ? (0,10$) x %d   ", nourriture_a_acheter);
 			}
 			if (mode_game == 6)
 			{
-				printf("\x1b[32;1HACHAT DE CAGES POUR LES MALES ? %d   ", achats_cages_males);
+				printf("\x1b[34;1HACHAT DE CAGES POUR LES MALES ? (5$) x %d   ", achats_cages_males);
 			}
 			if (mode_game == 7)
 			{
-				printf("\x1b[33;1HACHAT DE CAGES POUR LES FEMELLES ? %d   ", achats_cages_femelles);
+				printf("\x1b[35;1HACHAT DE CAGES POUR LES FEMELLES ? (5$) x %d   ", achats_cages_femelles);
 			}
 		}
 		else
 		{
-			printf("\x1b[12;1H-------------------------------------------------");
-			printf("\x1b[13;15HSITUATION OF THE MONTH No %d   ", Mois);
-			printf("\x1b[15;10HMALES                 FEMALES");
+			printf("\x1b[11;1H-------------------------------------------------");
+			printf("\x1b[12;15HSITUATION OF THE MONTH No %d   ", Mois);
+			printf("\x1b[14;10HMALES                 FEMALES");
 			printf("\x1b[16;10HADULTS  : %d   ", MALES.ADULTES);
 			printf("\x1b[16;32HADULTS  : %d   ", FEMELLES.ADULTES);
 			printf("\x1b[17;10HYOUNGS  : %d   ", MALES.PETITS);
@@ -152,96 +151,96 @@ void printGame()
 			printf("\x1b[18;32HCAGES   : %d   ", FEMELLES.CAGES);
 			printf("\x1b[19;6Hnb per cage : %d   ", MALES.nb_par_cage);
 			printf("\x1b[19;28Hnb per cage : %d   ", FEMELLES.nb_par_cage);
-			printf("\x1b[21;1HREMAINING FOOD              : %d KG   ", NOURRITURE);
+			printf("\x1b[21;1HREMAINING FOOD  %d KG   ", NOURRITURE);
 			printf("\x1b[22;1HPRICE OF HAMSTER THIS MONTH : %.2f $   ", PRIX_HAMSTER);
-			printf("\x1b[23;1HCHECKOUT                    : %.2f $   ", CAISSE);	
-			printf("\x1b[24;1HDEAD HUNGRY                 : %d   ", MORTS_FAIM);
-			printf("\x1b[25;1HDEAD SUFFOCATED             : %d   ", MORTS_ETOUFFES);	
-			printf("\x1b[26;1H** Press A to continue...");
-			printf("\x1b[27;1H-------------------------------------------------");
+			printf("\x1b[23;1HCHECKOUT : %.2f $   ", CAISSE);
+			printf("\x1b[25;1HDEAD HUNGRY     : %d   ", MORTS_FAIM);
+			printf("\x1b[26;1HDEAD SUFFOCATED : %d   ", MORTS_ETOUFFES);
+			printf("\x1b[28;1H** Press A to continue...");
+			printf("\x1b[29;1H-------------------------------------------------");
 
 			if (mode_game == 2)
 			{
-				printf("\x1b[28;1HMALES FOR SALE ? %d   ", males_a_vendre);
+				printf("\x1b[30;1HMALES FOR SALE ? (%.2f$) x %d   ", PRIX_HAMSTER, males_a_vendre);
 			}
 			if (mode_game == 3)
 			{
-				printf("\x1b[29;1HFEMALES FOR SALE ? %d   ", femelles_a_vendre);
+				printf("\x1b[31;1HFEMALES FOR SALE ? (%.2f$) x %d   ", PRIX_HAMSTER, femelles_a_vendre);
 			}
 			if (mode_game == 4)
 			{
-				printf("\x1b[30;1HNUMBER COUPLING ? %d   ", nombre_accouplement);
+				printf("\x1b[32;1HNUMBER COUPLING ? %d   ", nombre_accouplement);
 			}
 			if (mode_game == 5)
 			{
-				printf("\x1b[31;1HFOOD TO BUY ? %d   ", nourriture_a_acheter);
+				printf("\x1b[33;1HFOOD TO BUY ? (0,10$) x %d   ", nourriture_a_acheter);
 			}
 			if (mode_game == 6)
 			{
-				printf("\x1b[32;1HPURCHASE CAGES FOR MALES ? %d   ", achats_cages_males);
+				printf("\x1b[34;1HPURCHASE CAGES FOR MALES ? (5$) x %d   ", achats_cages_males);
 			}
 			if (mode_game == 7)
 			{
-				printf("\x1b[33;1HPURCHASE CAGES FOR FEMALES ? %d   ", achats_cages_femelles);
+				printf("\x1b[35;1HPURCHASE CAGES FOR FEMALES ?  (5$) x %d   ", achats_cages_femelles);
 			}
 		}
 
 		if (error)
-			printf("\x1b[34;1HIMPOSSIBLE   ");
+			printf("\x1b[36;1HIMPOSSIBLE   ");
 		else
-			printf("\x1b[34;1H             ");
+			printf("\x1b[36;1H             ");
 	}
-	else if (mode_game == 8)
+	if (mode_game == 8)
 	{
 		if (langue == 2)
 		{
-			printf("\x1b[35;1H...........FIN DU JEU...........   ");
+			printf("\x1b[37;1H...........FIN DU JEU...........   ");
 
-			if (SCORE <=150)
+			if (SCORE <=300)
 			{
-				printf("\x1b[37;1HOOPS!, VOTRE METHODE D'ELEVAGE EST A REVOIR.   ");
+				printf("\x1b[38;1HOOPS!, VOTRE METHODE D'ELEVAGE EST A REVOIR.   ");
 			}
-			else if ((SCORE > 150) && (SCORE <= 500))
+			else if ((SCORE > 300) && (SCORE <= 1000))
 			{
-				printf("\x1b[37;1HBRAVO, VOUS AVEZ CORRECTEMENT GERE L'ELEVAGE.   ");
+				printf("\x1b[38;1HBRAVO, VOUS AVEZ CORRECTEMENT GERE L'ELEVAGE.   ");
 			}
-			else if (SCORE > 500)
+			else if (SCORE > 1000)
 			{
-				printf("\x1b[37;1HEXCELLENT, VOUS ETES UN CHAMPION DE L'ELEVAGE.   ");
+				printf("\x1b[38;1HEXCELLENT, VOUS ETES UN CHAMPION DE L'ELEVAGE.   ");
 			}
 
-			printf("\x1b[38;1HVOUS AVEZ AU BOUT DE CES 12 MOIS :   ");
-			printf("\x1b[39;1H%d ADULTES   ", MALES.ADULTES + FEMELLES.ADULTES);
-			printf("\x1b[40;1H%d PETITS   ", MALES.PETITS + FEMELLES.PETITS);
-			printf("\x1b[41;1H%d CAGES   ", MALES.CAGES + FEMELLES.CAGES);
-			printf("\x1b[42;1H%d KG DE NOURRITURE   ", NOURRITURE);
-			printf("\x1b[43;1HLA VALEUR DE VOTRE ELEVAGE EST DE %.2f $   ", SCORE);
-			printf("\x1b[45;1H** APPUIES SUR A POUR RECOMMENCER...   ");
+			printf("\x1b[39;1HVOUS AVEZ AU BOUT DE CES 12 MOIS :   ");
+			printf("\x1b[40;1H%d ADULTES   ", MALES.ADULTES + FEMELLES.ADULTES);
+			printf("\x1b[41;1H%d PETITS   ", MALES.PETITS + FEMELLES.PETITS);
+			printf("\x1b[42;1H%d CAGES   ", MALES.CAGES + FEMELLES.CAGES);
+			printf("\x1b[43;1H%d KG DE NOURRITURE   ", NOURRITURE);
+			printf("\x1b[44;1HLA VALEUR DE VOTRE ELEVAGE EST DE %.2f $   ", SCORE);
+			printf("\x1b[46;1H** APPUIES SUR A POUR RECOMMENCER...   ");
 		}
 		else
 		{
-			printf("\x1b[35;1H...........END OF GAME...........   ");
+			printf("\x1b[37;1H...........END OF GAME...........   ");
 
-			if (SCORE <=150)
+			if (SCORE <=300)
 			{
-				printf("\x1b[37;1HOOPS!, YOUR BREEDING METHOD IS FAILING.   ");
+				printf("\x1b[38;1HOOPS!, YOUR BREEDING METHOD IS FAILING.   ");
 			}
-			else if ((SCORE > 150) && (SCORE <= 500))
+			else if ((SCORE > 300) && (SCORE <= 1000))
 			{
-				printf("\x1b[37;1HWELL DONE, YOU PROPERLY MANAGE BREEDING.   ");
+				printf("\x1b[38;1HWELL DONE, YOU PROPERLY MANAGE BREEDING.   ");
 			}
-			else if (SCORE > 500)
+			else if (SCORE > 1000)
 			{
-				printf("\x1b[37;1HGREAT JOB, YOU ARE A CHAMPION OF BREEDING.   ");
+				printf("\x1b[38;1HGREAT JOB, YOU ARE A CHAMPION OF BREEDING.   ");
 			}
 
-			printf("\x1b[38;1HYOU HAVE AFTER THESE 12 MONTHS :   ");
-			printf("\x1b[39;1H%d ADULTS   ", MALES.ADULTES + FEMELLES.ADULTES);
-			printf("\x1b[40;1H%d YOUNGS   ", MALES.PETITS + FEMELLES.PETITS);
-			printf("\x1b[41;1H%d CAGES   ", MALES.CAGES + FEMELLES.CAGES);
-			printf("\x1b[42;1H%d KG OF FOOD   ", NOURRITURE);
-			printf("\x1b[43;1HTHE VALUE OF YOUR BREEDING IS %.2f $   ", SCORE);
-			printf("\x1b[45;1H** PRESS A TO PLAY AGAIN...   ");
+			printf("\x1b[39;1HYOU HAVE AFTER THESE 12 MONTHS :   ");
+			printf("\x1b[40;1H%d ADULTS   ", MALES.ADULTES + FEMELLES.ADULTES);
+			printf("\x1b[41;1H%d YOUNGS   ", MALES.PETITS + FEMELLES.PETITS);
+			printf("\x1b[42;1H%d CAGES   ", MALES.CAGES + FEMELLES.CAGES);
+			printf("\x1b[43;1H%d KG OF FOOD   ", NOURRITURE);
+			printf("\x1b[44;1HTHE VALUE OF YOUR BREEDING IS %.2f $   ", SCORE);
+			printf("\x1b[46;1H** PRESS A TO PLAY AGAIN...   ");
 		}
 	}
 }
@@ -262,22 +261,26 @@ void newGame()
 	CAISSE = 5.00;
 	MORTS_ETOUFFES = 0;
 	MORTS_FAIM = 0;
+	SCORE = 0;
 }
 
 void readInput()
 {
-	if ((kDown & KEY_A) && (mode_intro == true))
+	padUpdate(&pad);
+	kDown = padGetButtonsDown(&pad);
+
+	if ((kDown & HidNpadButton_A) && (mode_intro == true))
 	{
 		mode_intro = false;
 		mode_game = 1;
 	}
-	else if ((kDown & KEY_A) && (mode_game == 1))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 1))
 	{
 		//ON demarre le mois
 		selection = 0;
 		mode_game = 2;
 	}
-	else if ((kDown & KEY_A) && (mode_game == 2))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 2))
 	{
 		if (males_a_vendre <= MALES.ADULTES)
 		{
@@ -285,6 +288,7 @@ void readInput()
 			mode_game = 3;
 			MALES.ADULTES -= males_a_vendre;
 			CAISSE += males_a_vendre*PRIX_HAMSTER;
+			MALES.nb_par_cage = (MALES.ADULTES+MALES.PETITS)/MALES.CAGES;
 			error = false;
 		}
 		else
@@ -293,7 +297,7 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 3))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 3))
 	{
 		if (femelles_a_vendre <= FEMELLES.ADULTES)
 		{
@@ -301,6 +305,7 @@ void readInput()
 			mode_game = 4;
 			FEMELLES.ADULTES -= femelles_a_vendre;
 			CAISSE += femelles_a_vendre*PRIX_HAMSTER;
+			FEMELLES.nb_par_cage = (FEMELLES.ADULTES+FEMELLES.PETITS)/FEMELLES.CAGES;
 			error = false;
 		}
 		else
@@ -309,7 +314,7 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 4))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 4))
 	{
 		if ((nombre_accouplement <= MALES.ADULTES) && (nombre_accouplement <= FEMELLES.ADULTES))
 		{
@@ -323,7 +328,7 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 5))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 5))
 	{
 		if (nourriture_a_acheter*0.10 <= CAISSE)
 		{
@@ -339,7 +344,7 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 6))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 6))
 	{
 		if (achats_cages_males*5 <= CAISSE)
 		{
@@ -347,6 +352,7 @@ void readInput()
 			mode_game = 7;
 			MALES.CAGES += achats_cages_males;
 			CAISSE -= achats_cages_males*5;//5$ la cage
+			MALES.nb_par_cage = (MALES.ADULTES+MALES.PETITS)/MALES.CAGES;
 			error = false;
 		}
 		else
@@ -355,13 +361,14 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 7))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 7))
 	{
 		if (achats_cages_femelles*5 <= CAISSE)
 		{
 			selection = 0;
 			FEMELLES.CAGES += achats_cages_femelles;
 			CAISSE -= achats_cages_femelles*5;//5$ la cage
+			FEMELLES.nb_par_cage = (FEMELLES.ADULTES + FEMELLES.PETITS)/FEMELLES.CAGES;
 			error = false;
 
 			MORTS_ETOUFFES = 0;
@@ -381,7 +388,7 @@ void readInput()
 
 				for (i = 1; i <= nombre_accouplement;i++)
 				{
-					//Nombre aléatoire de petits maxi 18
+					//Nombre alÃ©atoire de petits maxi 18
 					quantity = rand() % 18 + 1;
 
 					//On divise males et femelles
@@ -394,34 +401,29 @@ void readInput()
 				}
 			}
 
-			//Aide aux perdants, si plus d'hamsters, on rend un jeune couple en bonus
-			if (MALES.ADULTES + FEMELLES.ADULTES + MALES.PETITS + FEMELLES.PETITS == 0)
-			{
-				MALES.PETITS = 1;
-				FEMELLES.PETITS = 1;
-			}
-
 			//Les cages males
-			MALES.nb_par_cage = (MALES.ADULTES + MALES.PETITS) / MALES.CAGES;
+			MALES.nb_par_cage = (MALES.ADULTES + MALES.PETITS)/MALES.CAGES;
 
-			//Reset du nombre de mort ettouffé
+			//Reset du nombre de mort ettouffÃ©
 			MORTS_ETOUFFES = 0;
 
 			//On calcule les morts
 			while (MALES.nb_par_cage > 20)
 			{
 				//On tue les petits en premier
-				if (MALES.PETITS > 0) MALES.PETITS--;
+				if (MALES.PETITS > 0)
+					MALES.PETITS--;
 				//Sinon un adulte
-				else MALES.ADULTES--;
+				else
+					MALES.ADULTES--;
 
 				MORTS_ETOUFFES++;
 
-				MALES.nb_par_cage = (MALES.ADULTES + MALES.PETITS) / MALES.CAGES;
+				MALES.nb_par_cage = (MALES.ADULTES + MALES.PETITS)/MALES.CAGES;
 			}
 
 			//Les cages femelles
-			FEMELLES.nb_par_cage = (FEMELLES.ADULTES + FEMELLES.PETITS) / FEMELLES.CAGES;
+			FEMELLES.nb_par_cage = (FEMELLES.ADULTES + FEMELLES.PETITS)/FEMELLES.CAGES;
 
 			while (FEMELLES.nb_par_cage > 20)
 			{
@@ -432,10 +434,10 @@ void readInput()
 
 				MORTS_ETOUFFES++;
 
-				FEMELLES.nb_par_cage = (FEMELLES.ADULTES + FEMELLES.PETITS) / FEMELLES.CAGES;
+				FEMELLES.nb_par_cage = (FEMELLES.ADULTES + FEMELLES.PETITS)/FEMELLES.CAGES;
 			}
 
-			//La bouffe
+			//La nourriture
 			int effectifs;
 			effectifs = MALES.ADULTES + FEMELLES.ADULTES + MALES.PETITS + FEMELLES.PETITS;
 			MORTS_FAIM = 0;
@@ -465,7 +467,7 @@ void readInput()
 			//Passage au Mois suivant
 			Mois++;
 
-			//Variables à zéro
+			//Variables Ã  zÃ©ro
 			males_a_vendre = 0;
 			femelles_a_vendre = 0;
 			nombre_accouplement = 0;
@@ -479,7 +481,7 @@ void readInput()
 			if (Mois >= 13)
 			{
 				mode_game = 8;
-				SCORE = CAISSE + MALES.ADULTES + FEMELLES.ADULTES + MALES.PETITS + FEMELLES.PETITS + MALES.CAGES + FEMELLES.CAGES;
+				SCORE = CAISSE + MALES.ADULTES + FEMELLES.ADULTES + MALES.PETITS + FEMELLES.PETITS + (MALES.CAGES + FEMELLES.CAGES)*5 + NOURRITURE*0.1;
 			}
 			else
 			{
@@ -493,7 +495,7 @@ void readInput()
 			error = true;
 		}
 	}
-	else if ((kDown & KEY_A) && (mode_game == 8))
+	else if ((kDown & HidNpadButton_A) && (mode_game == 8))
 	{
 		SCORE = 0;
 		mode_game = 1;
@@ -502,41 +504,47 @@ void readInput()
 	}
 
 	//La selection au D-pad
-	else if ((kDown & KEY_RIGHT) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_Right) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection++;
 	}
-	else if ((kDown & KEY_LEFT) && (selection >= 1) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_Left) && (selection >= 1) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection--;
 	}
-	else if ((kDown & KEY_UP) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_Up) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection+=10;
 	}
-	else if ((kDown & KEY_DOWN) && (selection >= 10) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_Down) && (selection >= 10) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection-=10;
 	}
-	else if ((kDown & KEY_R) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_R) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection+=100;
 	}
-	else if ((kDown & KEY_L) && (selection >= 100) && (mode_game >= 2) && (mode_game < 8))
+	else if ((kDown & HidNpadButton_L) && (selection >= 100) && (mode_game >= 2) && (mode_game < 8))
 	{
 		selection-=100;
 	}
 }
 
-
 int main(int argc, char **argv)
 {
+	u64 LanguageCode=0;
+	SetLanguage Language=SetLanguage_ENUS;
+
 	consoleInit(NULL);
+	srand(time(0));
 
 	setInitialize();
 	setGetSystemLanguage(&LanguageCode);
-	langue = setMakeLanguage(LanguageCode, &Language);
+	setMakeLanguage(LanguageCode, &Language);
+	langue = Language;
 
+	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+	padInitializeDefault(&pad);
 
 	mode_intro = true;
 	newGame();
@@ -553,13 +561,12 @@ int main(int argc, char **argv)
 		else if (mode_game == 6) achats_cages_males = selection;
 		else if (mode_game == 7) achats_cages_femelles = selection;
 
-		hidScanInput();
-		kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 		readInput();
-		if (kDown & KEY_PLUS) { break; }// break in order to return to hbmenu
+
 		consoleUpdate(NULL);
 
-
+		if (kDown & HidNpadButton_Plus)
+			break;
 	}
 
 	setExit();
